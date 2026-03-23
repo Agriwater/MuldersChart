@@ -79,7 +79,17 @@ app.put('/api/graph', async (request, response) => {
 try {
   await fs.access(distDir);
   app.use(express.static(distDir));
-  app.get('*', (_, response) => {
+
+  app.get('/', (_, response) => {
+    response.sendFile(path.join(distDir, 'index.html'));
+  });
+
+  app.get(/^(?!\/api\/).*/, (request, response, next) => {
+    if (path.extname(request.path)) {
+      next();
+      return;
+    }
+
     response.sendFile(path.join(distDir, 'index.html'));
   });
 } catch {
