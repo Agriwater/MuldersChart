@@ -78,9 +78,21 @@ app.put('/api/graph', async (request, response) => {
 
 try {
   await fs.access(distDir);
-  app.use(express.static(distDir));
+  app.use(express.static(distDir, {
+    setHeaders: (response, filePath) => {
+      if (filePath.endsWith('.html')) {
+        response.setHeader('Cache-Control', 'no-store');
+        return;
+      }
+
+      if (filePath.includes(`${path.sep}assets${path.sep}`)) {
+        response.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      }
+    },
+  }));
 
   app.get('/', (_, response) => {
+    response.setHeader('Cache-Control', 'no-store');
     response.sendFile(path.join(distDir, 'index.html'));
   });
 
@@ -90,6 +102,7 @@ try {
       return;
     }
 
+    response.setHeader('Cache-Control', 'no-store');
     response.sendFile(path.join(distDir, 'index.html'));
   });
 } catch {
