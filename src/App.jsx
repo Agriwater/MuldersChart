@@ -7,6 +7,81 @@ import { calculateGraphState, createDefaultNodeState, createPersistedGraph } fro
 
 const buildLabel = `v${__APP_VERSION__} · ${__APP_COMMIT__}`;
 
+const nutrientDescriptions = {
+  N: 'Primary driver of leafy growth, canopy expansion, and protein demand.',
+  P: 'Energy-transfer nutrient that underpins roots, flowering, and early vigor.',
+  K: 'Water-balance and transport regulator tied to strength, movement, and stress handling.',
+  Ca: 'Structural nutrient for cell walls, growing points, and tissue firmness.',
+  Mg: 'Core chlorophyll nutrient that supports photosynthesis and enzyme activity.',
+  S: 'Protein-building nutrient that works closely with amino acids and nitrogen use.',
+  Fe: 'Redox and chlorophyll-support micronutrient tied to active green growth.',
+  Zn: 'Micronutrient involved in enzyme activity, hormones, and compact growth.',
+  Mn: 'Photosynthetic and enzymatic micronutrient supporting metabolic turnover.',
+  Cu: 'Micronutrient linked to redox enzymes, tissue strength, and reproductive activity.',
+  B: 'Cell-wall and transport micronutrient important for growing tips and movement of sugars.',
+  Mo: 'Trace nutrient for nitrate conversion and efficient nitrogen metabolism.',
+};
+
+function formatLabelList(labels) {
+  if (labels.length === 0) {
+    return '';
+  }
+
+  if (labels.length === 1) {
+    return labels[0];
+  }
+
+  if (labels.length === 2) {
+    return `${labels[0]} and ${labels[1]}`;
+  }
+
+  return `${labels.slice(0, -1).join(', ')}, and ${labels[labels.length - 1]}`;
+}
+
+function createElementGuide(nodes, edges) {
+  const labelById = Object.fromEntries(nodes.map((node) => [node.id, node.label]));
+
+  return Object.fromEntries(nodes.map((node) => {
+    const outgoingAntagonists = edges
+      .filter((edge) => edge.source === node.id && edge.relationshipType === 'antagonistic')
+      .map((edge) => labelById[edge.target])
+      .filter(Boolean);
+    const outgoingSynergies = edges
+      .filter((edge) => edge.source === node.id && edge.relationshipType === 'synergistic')
+      .map((edge) => labelById[edge.target])
+      .filter(Boolean);
+    const incomingAntagonists = edges
+      .filter((edge) => edge.target === node.id && edge.relationshipType === 'antagonistic')
+      .map((edge) => labelById[edge.source])
+      .filter(Boolean);
+
+    const lowNotes = [];
+    const highNotes = [];
+
+    if (outgoingSynergies.length > 0) {
+      lowNotes.push(`Lower levels reduce its supportive pull on ${formatLabelList(outgoingSynergies)}.`);
+    }
+
+    if (incomingAntagonists.length > 0) {
+      lowNotes.push(`It is also more exposed when ${formatLabelList(incomingAntagonists)} run high.`);
+    }
+
+    if (outgoingAntagonists.length > 0) {
+      highNotes.push(`High levels can push down ${formatLabelList(outgoingAntagonists)}.`);
+    }
+
+    if (outgoingSynergies.length > 0) {
+      highNotes.push(`When kept balanced, it can support ${formatLabelList(outgoingSynergies)}.`);
+    }
+
+    return [node.id, {
+      summary: nutrientDescriptions[node.id] || `${node.label} participates in the Mulder interaction balance.`,
+      low: lowNotes.join(' ') || 'Lower levels mainly reduce its own contribution to the nutrient balance.',
+      high: highNotes.join(' ') || 'Higher levels mainly change its own prominence without strong direct chart effects.',
+    }];
+  }));
+}
+
 const initialTuning = {
   synergyFactor: 0.55,
   antagonismFactor: 0.7,
@@ -64,6 +139,7 @@ function ChartApp() {
   }, []);
 
   const graphState = calculateGraphState(graph.nodes, graph.edges, nutrientValues, tuning);
+  const elementGuide = useMemo(() => createElementGuide(graph.nodes, graph.edges), [graph.nodes, graph.edges]);
   const highlightState = useMemo(() => {
     if (!activeInteraction) {
       return null;
@@ -227,16 +303,41 @@ function ChartApp() {
         <GraphScene graphState={graphState} highlightState={highlightState} />
       </section>
 
-      <section className="insight-strip">
-        {graphState.nodes.map((node) => (
-          <article className="insight-card" key={node.id}>
-            <span className="insight-id" style={{ '--chip': node.color }}>{node.id}</span>
-            <strong>{node.label}</strong>
-            <p>Base {Math.round(node.baseValue * 100)}%</p>
-            <p>Live value {Math.round(node.displayValue * 100)}%</p>
-            <p>Availability {Math.round(node.availabilityScore * 100)}%</p>
-          </article>
-        ))}
+      <section className="insight-section">
+        <div className="insight-section-header">
+          <div>
+            <p className="eyebrow">Element Guide</p>
+            <h2>What low and high levels mean in this chart</h2>
+          </div>
+          <p className="insight-section-copy">
+            These notes follow the Mulder interactions modeled above, so each card explains both the nutrient itself and how it behaves when levels drift low or high.
+          </p>
+        </div>
+
+        <div className="insight-strip">
+          {graphState.nodes.map((node) => {
+            const guide = elementGuide[node.id];
+
+            return (
+              <article className="insight-card" key={node.id}>
+                <div className="insight-card-header">
+                  <span className="insight-id" style={{ '--chip': node.color }}>{node.id}</span>
+                  <div>
+                    <strong>{node.label}</strong>
+                    <p className="insight-summary">{guide.summary}</p>
+                  </div>
+                </div>
+                <div className="insight-metrics">
+                  <p>Base {Math.round(node.baseValue * 100)}%</p>
+                  <p>Live value {Math.round(node.displayValue * 100)}%</p>
+                  <p>Availability {Math.round(node.availabilityScore * 100)}%</p>
+                </div>
+                <p><span className="insight-label">Low:</span> {guide.low}</p>
+                <p><span className="insight-label">High:</span> {guide.high}</p>
+              </article>
+            );
+          })}
+        </div>
       </section>
 
       {isRulesOpen ? (
