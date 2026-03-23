@@ -287,6 +287,17 @@ input[type='range'] {
   overflow: hidden;
 }
 
+.scene-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.scene-overlay-active {
+  pointer-events: auto;
+}
+
 .scene-shell canvas {
   display: block;
   width: 100% !important;
@@ -355,9 +366,51 @@ input[type='range'] {
   gap: 4px;
 }
 
+.insight-card-hint {
+  color: var(--accent);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+}
+
 .insight-label {
   color: var(--accent-2);
   font-weight: 700;
+}
+
+.element-tooltip {
+  width: min(340px, 100%);
+  padding: 22px;
+  border-radius: 28px;
+  background: rgba(6, 24, 37, 0.98);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 16px;
+}
+
+.element-tooltip-floating {
+  position: absolute;
+  pointer-events: auto;
+}
+
+.element-tooltip-slider {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.element-tooltip-slider span {
+  color: var(--muted);
+}
+
+.element-tooltip-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
 }
 
 .panel-table {

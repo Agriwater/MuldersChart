@@ -200,7 +200,7 @@ function BalanceHub() {
   );
 }
 
-function NodeMesh({ node, position, highlightState }) {
+function NodeMesh({ node, position, highlightState, onSelect }) {
   const auraRef = useRef(null);
   const medalRef = useRef(null);
 
@@ -239,7 +239,16 @@ function NodeMesh({ node, position, highlightState }) {
         <cylinderGeometry args={[0.98, 0.98, 0.08, 60]} />
         <meshBasicMaterial color={node.color} transparent opacity={0.14} />
       </mesh>
-      <group ref={medalRef}>
+      <group
+        ref={medalRef}
+        onPointerDown={(event) => {
+          event.stopPropagation();
+          onSelect?.(node.id, {
+            clientX: event.nativeEvent.clientX,
+            clientY: event.nativeEvent.clientY,
+          });
+        }}
+      >
         <mesh position={[0, 0, -0.015]} rotation={[Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[0.9, 0.9, 0.18, 60]} />
           <meshBasicMaterial color={badgeOuterShadow} />
@@ -432,7 +441,7 @@ function CameraFitter({ graphState, positions, controlsRef }) {
   return null;
 }
 
-export default function GraphScene({ graphState, highlightState = null }) {
+export default function GraphScene({ graphState, highlightState = null, onNodeSelect, controlsEnabled = true, children = null }) {
   const positions = useGraphLayout(graphState.nodes, graphState.edges);
   const controlsRef = useRef(null);
 
@@ -454,11 +463,18 @@ export default function GraphScene({ graphState, highlightState = null }) {
             />
           ))}
           {graphState.nodes.map((node) => (
-            <NodeMesh key={node.id} node={node} position={positions[node.id] ?? [0, 0, 0]} highlightState={highlightState} />
+            <NodeMesh
+              key={node.id}
+              node={node}
+              position={positions[node.id] ?? [0, 0, 0]}
+              highlightState={highlightState}
+              onSelect={onNodeSelect}
+            />
           ))}
         </group>
         <OrbitControls
           ref={controlsRef}
+          enabled={controlsEnabled}
           enableRotate={false}
           enablePan
           mouseButtons={{
@@ -475,6 +491,7 @@ export default function GraphScene({ graphState, highlightState = null }) {
           maxZoom={90}
         />
       </Canvas>
+      {children}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import GraphScene from './components/GraphScene';
 import ControlPanel from './components/ControlPanel';
 import RelationshipEditor from './components/RelationshipEditor';
@@ -88,6 +88,10 @@ const initialTuning = {
   secondOrderDamping: 0.42,
 };
 
+function clampPercentage(value) {
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
 function ChartApp() {
   const [graph, setGraph] = useState({ nodes: [], edges: [] });
   const [nutrientValues, setNutrientValues] = useState({});
@@ -98,6 +102,9 @@ function ChartApp() {
   const [activeInteraction, setActiveInteraction] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isRulesOpen, setIsRulesOpen] = useState(false);
+  const [selectedElementId, setSelectedElementId] = useState(null);
+  const [tooltipPosition, setTooltipPosition] = useState(null);
+  const sceneOverlayRef = useRef(null);
 
   useEffect(() => {
     document.title = "Mulder's Chart 3D";
@@ -108,6 +115,8 @@ function ChartApp() {
       if (event.key === 'Escape') {
         setIsMenuOpen(false);
         setIsRulesOpen(false);
+        setSelectedElementId(null);
+        setTooltipPosition(null);
       }
     }
 
@@ -196,6 +205,82 @@ function ChartApp() {
     }));
   }
 
+  function updateTooltipSlider(nodeId, nextValue) {
+    handleNutrientChange(nodeId, clampPercentage(nextValue));
+  }
+
+  function handleTooltipSliderPointer(event, nodeId) {
+    event.stopPropagation();
+
+    const target = event.currentTarget;
+    const pointerId = event.pointerId;
+
+    const updateFromClientX = (clientX) => {
+      const rect = target.getBoundingClientRect();
+      if (!rect.width) {
+        return;
+      }
+
+      const ratio = (clientX - rect.left) / rect.width;
+      updateTooltipSlider(nodeId, ratio * 100);
+    };
+
+    updateFromClientX(event.clientX);
+    target.setPointerCapture?.(pointerId);
+
+    const handleMove = (moveEvent) => {
+      if (moveEvent.pointerId !== pointerId) {
+        return;
+      }
+
+      moveEvent.preventDefault();
+      moveEvent.stopPropagation();
+      updateFromClientX(moveEvent.clientX);
+    };
+
+    const handleEnd = (endEvent) => {
+      if (endEvent.pointerId !== pointerId) {
+        return;
+      }
+
+      endEvent.preventDefault();
+      endEvent.stopPropagation();
+      updateFromClientX(endEvent.clientX);
+      target.releasePointerCapture?.(pointerId);
+      target.removeEventListener('pointermove', handleMove);
+      target.removeEventListener('pointerup', handleEnd);
+      target.removeEventListener('pointercancel', handleEnd);
+    };
+
+    target.addEventListener('pointermove', handleMove);
+    target.addEventListener('pointerup', handleEnd);
+    target.addEventListener('pointercancel', handleEnd);
+  }
+
+  function handleTooltipSliderKeyDown(event, nodeId) {
+    const currentValue = nutrientValues[nodeId] ?? 0;
+
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') {
+      event.preventDefault();
+      updateTooltipSlider(nodeId, currentValue - 1);
+    }
+
+    if (event.key === 'ArrowRight' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      updateTooltipSlider(nodeId, currentValue + 1);
+    }
+
+    if (event.key === 'Home') {
+      event.preventDefault();
+      updateTooltipSlider(nodeId, 0);
+    }
+
+    if (event.key === 'End') {
+      event.preventDefault();
+      updateTooltipSlider(nodeId, 100);
+    }
+  }
+
   function handleReset() {
     setNutrientValues(createDefaultNodeState(graph.nodes));
     setTuning(initialTuning);
@@ -243,6 +328,35 @@ function ChartApp() {
     setIsMenuOpen(false);
     setIsRulesOpen(true);
   }
+
+  function handleNodeTooltip(nodeId, pointer) {
+    const bounds = sceneOverlayRef.current?.getBoundingClientRect();
+
+    if (!bounds) {
+      setSelectedElementId(nodeId);
+      setTooltipPosition({ x: 24, y: 24 });
+      return;
+    }
+
+    const tooltipWidth = 340;
+    const tooltipHeight = 260;
+    const margin = 18;
+    const preferredX = pointer.clientX - bounds.left + 18;
+    const preferredY = pointer.clientY - bounds.top - 10;
+    const maxX = Math.max(margin, bounds.width - tooltipWidth - margin);
+    const maxY = Math.max(margin, bounds.height - tooltipHeight - margin);
+
+    setSelectedElementId(nodeId);
+    setTooltipPosition({
+      x: Math.min(Math.max(preferredX, margin), maxX),
+      y: Math.min(Math.max(preferredY, margin), maxY),
+    });
+  }
+
+  const selectedElement = selectedElementId
+    ? graphState.nodes.find((node) => node.id === selectedElementId) || null
+    : null;
+  const selectedGuide = selectedElement ? elementGuide[selectedElement.id] : null;
 
   if (isLoading) {
     return <div className="status-screen">Loading graph data...</div>;
@@ -300,7 +414,78 @@ function ChartApp() {
           onReset={handleReset}
           onPersistBase={handlePersistBase}
         />
-        <GraphScene graphState={graphState} highlightState={highlightState} />
+        <GraphScene
+          graphState={graphState}
+          highlightState={highlightState}
+          onNodeSelect={handleNodeTooltip}
+          controlsEnabled={!selectedElement}
+        >
+          <div
+            className={`scene-overlay${selectedElement && selectedGuide && tooltipPosition ? ' scene-overlay-active' : ''}`}
+            ref={sceneOverlayRef}
+            onClick={() => {
+              setSelectedElementId(null);
+              setTooltipPosition(null);
+            }}
+          >
+            {selectedElement && selectedGuide && tooltipPosition ? (
+              <div
+                className="element-tooltip element-tooltip-floating"
+                role="dialog"
+                aria-label={`${selectedElement.label} element details`}
+                style={{ left: `${tooltipPosition.x}px`, top: `${tooltipPosition.y}px` }}
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <div className="element-tooltip-header">
+                  <div className="insight-card-header">
+                    <span className="insight-id" style={{ '--chip': selectedElement.color }}>{selectedElement.id}</span>
+                    <div>
+                      <strong>{selectedElement.label}</strong>
+                      <p className="insight-summary">{selectedGuide.summary}</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="icon-button"
+                    onClick={() => {
+                      setSelectedElementId(null);
+                      setTooltipPosition(null);
+                    }}
+                  >
+                    Close
+                  </button>
+                </div>
+                <div className="insight-metrics">
+                  <p>Base {Math.round(selectedElement.baseValue * 100)}%</p>
+                  <p>Live value {Math.round(selectedElement.displayValue * 100)}%</p>
+                  <p>Availability {Math.round(selectedElement.availabilityScore * 100)}%</p>
+                </div>
+                <label className="element-tooltip-slider">
+                  <div className="slider-card-top">
+                    <span>Adjust level</span>
+                    <strong>{nutrientValues[selectedElement.id]}%</strong>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="1"
+                    value={nutrientValues[selectedElement.id]}
+                    onInput={(event) => onNutrientChange(selectedElement.id, Number(event.target.value))}
+                    onChange={(event) => onNutrientChange(selectedElement.id, Number(event.target.value))}
+                    onPointerDown={(event) => handleTooltipSliderPointer(event, selectedElement.id)}
+                    onPointerMove={(event) => event.stopPropagation()}
+                    onPointerUp={(event) => event.stopPropagation()}
+                    onKeyDown={(event) => handleTooltipSliderKeyDown(event, selectedElement.id)}
+                  />
+                </label>
+                <p><span className="insight-label">Low:</span> {selectedGuide.low}</p>
+                <p><span className="insight-label">High:</span> {selectedGuide.high}</p>
+              </div>
+            ) : null}
+          </div>
+        </GraphScene>
       </section>
 
       <section className="insight-section">
@@ -329,11 +514,9 @@ function ChartApp() {
                 </div>
                 <div className="insight-metrics">
                   <p>Base {Math.round(node.baseValue * 100)}%</p>
-                  <p>Live value {Math.round(node.displayValue * 100)}%</p>
                   <p>Availability {Math.round(node.availabilityScore * 100)}%</p>
                 </div>
-                <p><span className="insight-label">Low:</span> {guide.low}</p>
-                <p><span className="insight-label">High:</span> {guide.high}</p>
+                <p className="insight-card-hint">Click the chart node for low/high interpretation</p>
               </article>
             );
           })}
