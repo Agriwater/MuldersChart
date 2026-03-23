@@ -92,6 +92,70 @@ function clampPercentage(value) {
   return Math.max(0, Math.min(100, Math.round(value)));
 }
 
+function ElementDetails({
+  element,
+  guide,
+  value,
+  onClose,
+  onChange,
+  onPointerDown,
+  onPointerMove,
+  onPointerUp,
+  onKeyDown,
+  className = '',
+  style,
+}) {
+  return (
+    <div
+      className={`element-tooltip ${className}`.trim()}
+      role="dialog"
+      aria-label={`${element.label} element details`}
+      style={style}
+      onPointerDown={(event) => event.stopPropagation()}
+      onClick={(event) => event.stopPropagation()}
+    >
+      <div className="element-tooltip-header">
+        <div className="insight-card-header">
+          <span className="insight-id" style={{ '--chip': element.color }}>{element.id}</span>
+          <div>
+            <strong>{element.label}</strong>
+            <p className="insight-summary">{guide.summary}</p>
+          </div>
+        </div>
+        <button type="button" className="icon-button" onClick={onClose}>
+          Close
+        </button>
+      </div>
+      <div className="insight-metrics">
+        <p>Base {Math.round(element.baseValue * 100)}%</p>
+        <p>Live value {Math.round(element.displayValue * 100)}%</p>
+        <p>Availability {Math.round(element.availabilityScore * 100)}%</p>
+      </div>
+      <label className="element-tooltip-slider">
+        <div className="slider-card-top">
+          <span>Adjust level</span>
+          <strong>{value}%</strong>
+        </div>
+        <input
+          type="range"
+          min="0"
+          max="100"
+          step="1"
+          value={value}
+          onInput={(event) => onChange(Number(event.target.value))}
+          onChange={(event) => onChange(Number(event.target.value))}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onKeyDown={onKeyDown}
+        />
+      </label>
+      <p><span className="insight-label">Low:</span> {guide.low}</p>
+      <p><span className="insight-label">High:</span> {guide.high}</p>
+    </div>
+  );
+}
+
 function ChartApp() {
   const [graph, setGraph] = useState({ nodes: [], edges: [] });
   const [nutrientValues, setNutrientValues] = useState({});
@@ -357,6 +421,10 @@ function ChartApp() {
     ? graphState.nodes.find((node) => node.id === selectedElementId) || null
     : null;
   const selectedGuide = selectedElement ? elementGuide[selectedElement.id] : null;
+  const closeSelectedElement = () => {
+    setSelectedElementId(null);
+    setTooltipPosition(null);
+  };
 
   if (isLoading) {
     return <div className="status-screen">Loading graph data...</div>;
@@ -414,78 +482,51 @@ function ChartApp() {
           onReset={handleReset}
           onPersistBase={handlePersistBase}
         />
-        <GraphScene
-          graphState={graphState}
-          highlightState={highlightState}
-          onNodeSelect={handleNodeTooltip}
-          controlsEnabled={!selectedElement}
-        >
-          <div
-            className={`scene-overlay${selectedElement && selectedGuide && tooltipPosition ? ' scene-overlay-active' : ''}`}
-            ref={sceneOverlayRef}
-            onClick={() => {
-              setSelectedElementId(null);
-              setTooltipPosition(null);
-            }}
+        <div className="scene-column">
+          <GraphScene
+            graphState={graphState}
+            highlightState={highlightState}
+            onNodeSelect={handleNodeTooltip}
+            controlsEnabled={!selectedElement}
           >
-            {selectedElement && selectedGuide && tooltipPosition ? (
-              <div
-                className="element-tooltip element-tooltip-floating"
-                role="dialog"
-                aria-label={`${selectedElement.label} element details`}
-                style={{ left: `${tooltipPosition.x}px`, top: `${tooltipPosition.y}px` }}
-                onPointerDown={(event) => event.stopPropagation()}
-                onClick={(event) => event.stopPropagation()}
-              >
-                <div className="element-tooltip-header">
-                  <div className="insight-card-header">
-                    <span className="insight-id" style={{ '--chip': selectedElement.color }}>{selectedElement.id}</span>
-                    <div>
-                      <strong>{selectedElement.label}</strong>
-                      <p className="insight-summary">{selectedGuide.summary}</p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    className="icon-button"
-                    onClick={() => {
-                      setSelectedElementId(null);
-                      setTooltipPosition(null);
-                    }}
-                  >
-                    Close
-                  </button>
-                </div>
-                <div className="insight-metrics">
-                  <p>Base {Math.round(selectedElement.baseValue * 100)}%</p>
-                  <p>Live value {Math.round(selectedElement.displayValue * 100)}%</p>
-                  <p>Availability {Math.round(selectedElement.availabilityScore * 100)}%</p>
-                </div>
-                <label className="element-tooltip-slider">
-                  <div className="slider-card-top">
-                    <span>Adjust level</span>
-                    <strong>{nutrientValues[selectedElement.id]}%</strong>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    step="1"
-                    value={nutrientValues[selectedElement.id]}
-                    onInput={(event) => onNutrientChange(selectedElement.id, Number(event.target.value))}
-                    onChange={(event) => onNutrientChange(selectedElement.id, Number(event.target.value))}
-                    onPointerDown={(event) => handleTooltipSliderPointer(event, selectedElement.id)}
-                    onPointerMove={(event) => event.stopPropagation()}
-                    onPointerUp={(event) => event.stopPropagation()}
-                    onKeyDown={(event) => handleTooltipSliderKeyDown(event, selectedElement.id)}
-                  />
-                </label>
-                <p><span className="insight-label">Low:</span> {selectedGuide.low}</p>
-                <p><span className="insight-label">High:</span> {selectedGuide.high}</p>
-              </div>
-            ) : null}
-          </div>
-        </GraphScene>
+            <div
+              className={`scene-overlay${selectedElement && selectedGuide && tooltipPosition ? ' scene-overlay-active' : ''}`}
+              ref={sceneOverlayRef}
+              onClick={closeSelectedElement}
+            >
+              {selectedElement && selectedGuide && tooltipPosition ? (
+                <ElementDetails
+                  element={selectedElement}
+                  guide={selectedGuide}
+                  value={nutrientValues[selectedElement.id]}
+                  className="element-tooltip-floating element-tooltip-desktop"
+                  style={{ left: `${tooltipPosition.x}px`, top: `${tooltipPosition.y}px` }}
+                  onClose={closeSelectedElement}
+                  onChange={(nextValue) => onNutrientChange(selectedElement.id, nextValue)}
+                  onPointerDown={(event) => handleTooltipSliderPointer(event, selectedElement.id)}
+                  onPointerMove={(event) => event.stopPropagation()}
+                  onPointerUp={(event) => event.stopPropagation()}
+                  onKeyDown={(event) => handleTooltipSliderKeyDown(event, selectedElement.id)}
+                />
+              ) : null}
+            </div>
+          </GraphScene>
+
+          {selectedElement && selectedGuide ? (
+            <ElementDetails
+              element={selectedElement}
+              guide={selectedGuide}
+              value={nutrientValues[selectedElement.id]}
+              className="element-tooltip-mobile"
+              onClose={closeSelectedElement}
+              onChange={(nextValue) => onNutrientChange(selectedElement.id, nextValue)}
+              onPointerDown={(event) => handleTooltipSliderPointer(event, selectedElement.id)}
+              onPointerMove={(event) => event.stopPropagation()}
+              onPointerUp={(event) => event.stopPropagation()}
+              onKeyDown={(event) => handleTooltipSliderKeyDown(event, selectedElement.id)}
+            />
+          ) : null}
+        </div>
       </section>
 
       <section className="insight-section">
