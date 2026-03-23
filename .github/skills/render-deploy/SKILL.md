@@ -24,7 +24,7 @@ Use this skill when working on deployment of this repository to Render.
 - Free tier persistence path: `GRAPH_DATA_FILE=/tmp/mulders-graph.json`
 - Free tier storage is ephemeral, so saved graph edits do not survive restarts or redeploys
 - Production routing relies on Express serving `dist/` and falling back to `index.html` only for non-asset, non-API routes
-- Stable asset filenames are intentionally configured as `assets/app.js` and `assets/app.css`
+- Production assets use Vite content hashes, while HTML is served with `Cache-Control: no-store`
 
 ## Procedure
 1. Confirm the latest code is pushed to GitHub before touching Render.
@@ -53,7 +53,7 @@ Use this skill when working on deployment of this repository to Render.
 
 - Browser requests an old asset filename
   Cause: stale HTML or asset hash mismatch during rollout.
-  Fix: verify `Cache-Control: no-store` behavior for HTML and stable asset filenames.
+  Fix: verify `Cache-Control: no-store` behavior for HTML and content-hashed asset filenames.
 
 - Health check hangs
   Cause: app process did not fully start, wrong host, wrong port binding, or runtime error before server boot.
