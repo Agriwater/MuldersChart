@@ -1,0 +1,562 @@
+{
+  "nodes": [
+    {
+      "id": "N",
+      "label": "Nitrogen",
+      "baseValue": 0.58,
+      "availabilityScore": 0.58,
+      "color": "#60d394",
+      "size": 1.26,
+      "group": "macro"
+    },
+    {
+      "id": "P",
+      "label": "Phosphorus",
+      "baseValue": 0.52,
+      "availabilityScore": 0.52,
+      "color": "#5bc0eb",
+      "size": 1.18,
+      "group": "macro"
+    },
+    {
+      "id": "K",
+      "label": "Potassium",
+      "baseValue": 0.63,
+      "availabilityScore": 0.63,
+      "color": "#4cc9f0",
+      "size": 1.21,
+      "group": "macro"
+    },
+    {
+      "id": "Ca",
+      "label": "Calcium",
+      "baseValue": 0.56,
+      "availabilityScore": 0.56,
+      "color": "#ffd166",
+      "size": 1.12,
+      "group": "secondary"
+    },
+    {
+      "id": "Mg",
+      "label": "Magnesium",
+      "baseValue": 0.49,
+      "availabilityScore": 0.49,
+      "color": "#f4a261",
+      "size": 1.08,
+      "group": "secondary"
+    },
+    {
+      "id": "S",
+      "label": "Sulfur",
+      "baseValue": 0.47,
+      "availabilityScore": 0.47,
+      "color": "#8ecae6",
+      "size": 1.06,
+      "group": "secondary"
+    },
+    {
+      "id": "Fe",
+      "label": "Iron",
+      "baseValue": 0.44,
+      "availabilityScore": 0.44,
+      "color": "#f28482",
+      "size": 0.98,
+      "group": "micro"
+    },
+    {
+      "id": "Zn",
+      "label": "Zinc",
+      "baseValue": 0.43,
+      "availabilityScore": 0.43,
+      "color": "#b8de6f",
+      "size": 0.96,
+      "group": "micro"
+    },
+    {
+      "id": "Mn",
+      "label": "Manganese",
+      "baseValue": 0.41,
+      "availabilityScore": 0.41,
+      "color": "#90be6d",
+      "size": 0.95,
+      "group": "micro"
+    },
+    {
+      "id": "Cu",
+      "label": "Copper",
+      "baseValue": 0.38,
+      "availabilityScore": 0.38,
+      "color": "#f8961e",
+      "size": 0.92,
+      "group": "micro"
+    },
+    {
+      "id": "B",
+      "label": "Boron",
+      "baseValue": 0.34,
+      "availabilityScore": 0.34,
+      "color": "#43aa8b",
+      "size": 0.9,
+      "group": "micro"
+    },
+    {
+      "id": "Mo",
+      "label": "Molybdenum",
+      "baseValue": 0.29,
+      "availabilityScore": 0.29,
+      "color": "#577590",
+      "size": 0.88,
+      "group": "micro"
+    }
+  ],
+  "edges": [
+    {
+      "source": "N",
+      "target": "S",
+      "relationshipType": "synergistic",
+      "weight": 0.4,
+      "animationStyle": "pulse",
+      "ruleDescription": "Balanced nitrogen can support sulfur availability"
+    },
+    {
+      "source": "N",
+      "target": "Mg",
+      "relationshipType": "synergistic",
+      "weight": 0.4,
+      "animationStyle": "pulse",
+      "ruleDescription": "Balanced nitrogen can support magnesium"
+    },
+    {
+      "source": "N",
+      "target": "Mo",
+      "relationshipType": "synergistic",
+      "weight": 0.4,
+      "animationStyle": "pulse",
+      "ruleDescription": "Balanced nitrogen can support molybdenum"
+    },
+    {
+      "source": "N",
+      "target": "B",
+      "relationshipType": "antagonistic",
+      "weight": 0.7,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess nitrogen can reduce boron availability"
+    },
+    {
+      "source": "N",
+      "target": "K",
+      "relationshipType": "antagonistic",
+      "weight": 0.6,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess nitrogen can reduce potassium availability"
+    },
+    {
+      "source": "N",
+      "target": "Cu",
+      "relationshipType": "antagonistic",
+      "weight": 0.6,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess nitrogen can reduce copper availability"
+    },
+    {
+      "source": "P",
+      "target": "K",
+      "relationshipType": "antagonistic",
+      "weight": 0.7,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess phosphorus can reduce potassium availability"
+    },
+    {
+      "source": "P",
+      "target": "Ca",
+      "relationshipType": "antagonistic",
+      "weight": 0.8,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess phosphorus can reduce calcium availability"
+    },
+    {
+      "source": "P",
+      "target": "Zn",
+      "relationshipType": "antagonistic",
+      "weight": 0.9,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess phosphorus can reduce zinc availability"
+    },
+    {
+      "source": "P",
+      "target": "Fe",
+      "relationshipType": "antagonistic",
+      "weight": 0.8,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess phosphorus can reduce iron availability"
+    },
+    {
+      "source": "P",
+      "target": "Cu",
+      "relationshipType": "antagonistic",
+      "weight": 0.7,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess phosphorus can reduce copper availability"
+    },
+    {
+      "source": "P",
+      "target": "Mg",
+      "relationshipType": "synergistic",
+      "weight": 0.4,
+      "animationStyle": "pulse",
+      "ruleDescription": "Balanced phosphorus can support magnesium"
+    },
+    {
+      "source": "K",
+      "target": "Ca",
+      "relationshipType": "antagonistic",
+      "weight": 0.9,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess potassium can reduce calcium availability"
+    },
+    {
+      "source": "K",
+      "target": "Mg",
+      "relationshipType": "antagonistic",
+      "weight": 0.9,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess potassium can reduce magnesium availability"
+    },
+    {
+      "source": "K",
+      "target": "B",
+      "relationshipType": "antagonistic",
+      "weight": 0.6,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess potassium can reduce boron availability"
+    },
+    {
+      "source": "K",
+      "target": "N",
+      "relationshipType": "antagonistic",
+      "weight": 0.5,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess potassium can reduce nitrogen availability"
+    },
+    {
+      "source": "K",
+      "target": "P",
+      "relationshipType": "antagonistic",
+      "weight": 0.5,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess potassium can reduce phosphorus availability"
+    },
+    {
+      "source": "K",
+      "target": "Fe",
+      "relationshipType": "synergistic",
+      "weight": 0.4,
+      "animationStyle": "pulse",
+      "ruleDescription": "Balanced potassium can support iron"
+    },
+    {
+      "source": "K",
+      "target": "Mn",
+      "relationshipType": "synergistic",
+      "weight": 0.4,
+      "animationStyle": "pulse",
+      "ruleDescription": "Balanced potassium can support manganese"
+    },
+    {
+      "source": "S",
+      "target": "Ca",
+      "relationshipType": "antagonistic",
+      "weight": 0.7,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess sulfur can reduce calcium availability"
+    },
+    {
+      "source": "S",
+      "target": "Cu",
+      "relationshipType": "antagonistic",
+      "weight": 0.6,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess sulfur can reduce copper availability"
+    },
+    {
+      "source": "S",
+      "target": "Mo",
+      "relationshipType": "antagonistic",
+      "weight": 0.7,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess sulfur can reduce molybdenum availability"
+    },
+    {
+      "source": "S",
+      "target": "Mn",
+      "relationshipType": "synergistic",
+      "weight": 0.4,
+      "animationStyle": "pulse",
+      "ruleDescription": "Balanced sulfur can support manganese"
+    },
+    {
+      "source": "S",
+      "target": "N",
+      "relationshipType": "synergistic",
+      "weight": 0.3,
+      "animationStyle": "pulse",
+      "ruleDescription": "Balanced sulfur can support nitrogen"
+    },
+    {
+      "source": "Ca",
+      "target": "Mg",
+      "relationshipType": "antagonistic",
+      "weight": 0.9,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess calcium can reduce magnesium availability"
+    },
+    {
+      "source": "Ca",
+      "target": "Zn",
+      "relationshipType": "antagonistic",
+      "weight": 0.9,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess calcium can reduce zinc availability"
+    },
+    {
+      "source": "Ca",
+      "target": "Fe",
+      "relationshipType": "antagonistic",
+      "weight": 0.8,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess calcium can reduce iron availability"
+    },
+    {
+      "source": "Ca",
+      "target": "Mn",
+      "relationshipType": "antagonistic",
+      "weight": 0.7,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess calcium can reduce manganese availability"
+    },
+    {
+      "source": "Ca",
+      "target": "B",
+      "relationshipType": "antagonistic",
+      "weight": 0.7,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess calcium can reduce boron availability"
+    },
+    {
+      "source": "Ca",
+      "target": "P",
+      "relationshipType": "antagonistic",
+      "weight": 0.7,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess calcium can reduce phosphorus availability"
+    },
+    {
+      "source": "Ca",
+      "target": "K",
+      "relationshipType": "antagonistic",
+      "weight": 0.8,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess calcium can reduce potassium availability"
+    },
+    {
+      "source": "Ca",
+      "target": "S",
+      "relationshipType": "antagonistic",
+      "weight": 0.6,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess calcium can reduce sulfur availability"
+    },
+    {
+      "source": "Mg",
+      "target": "K",
+      "relationshipType": "antagonistic",
+      "weight": 0.9,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess magnesium can reduce potassium availability"
+    },
+    {
+      "source": "Mg",
+      "target": "Ca",
+      "relationshipType": "antagonistic",
+      "weight": 0.8,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess magnesium can reduce calcium availability"
+    },
+    {
+      "source": "Mg",
+      "target": "N",
+      "relationshipType": "synergistic",
+      "weight": 0.4,
+      "animationStyle": "pulse",
+      "ruleDescription": "Balanced magnesium can support nitrogen"
+    },
+    {
+      "source": "Mg",
+      "target": "P",
+      "relationshipType": "synergistic",
+      "weight": 0.4,
+      "animationStyle": "pulse",
+      "ruleDescription": "Balanced magnesium can support phosphorus"
+    },
+    {
+      "source": "Zn",
+      "target": "Fe",
+      "relationshipType": "antagonistic",
+      "weight": 0.8,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess zinc can reduce iron availability"
+    },
+    {
+      "source": "Zn",
+      "target": "P",
+      "relationshipType": "antagonistic",
+      "weight": 0.8,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess zinc can reduce phosphorus availability"
+    },
+    {
+      "source": "Zn",
+      "target": "Ca",
+      "relationshipType": "antagonistic",
+      "weight": 0.8,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess zinc can reduce calcium availability"
+    },
+    {
+      "source": "Fe",
+      "target": "Cu",
+      "relationshipType": "antagonistic",
+      "weight": 0.7,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess iron can reduce copper availability"
+    },
+    {
+      "source": "Fe",
+      "target": "Mn",
+      "relationshipType": "antagonistic",
+      "weight": 0.8,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess iron can reduce manganese availability"
+    },
+    {
+      "source": "Fe",
+      "target": "P",
+      "relationshipType": "antagonistic",
+      "weight": 0.7,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess iron can reduce phosphorus availability"
+    },
+    {
+      "source": "Fe",
+      "target": "Ca",
+      "relationshipType": "antagonistic",
+      "weight": 0.7,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess iron can reduce calcium availability"
+    },
+    {
+      "source": "Fe",
+      "target": "Zn",
+      "relationshipType": "antagonistic",
+      "weight": 0.7,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess iron can reduce zinc availability"
+    },
+    {
+      "source": "Fe",
+      "target": "K",
+      "relationshipType": "synergistic",
+      "weight": 0.4,
+      "animationStyle": "pulse",
+      "ruleDescription": "Balanced iron can support potassium"
+    },
+    {
+      "source": "Cu",
+      "target": "Mn",
+      "relationshipType": "antagonistic",
+      "weight": 0.8,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess copper can reduce manganese availability"
+    },
+    {
+      "source": "Cu",
+      "target": "N",
+      "relationshipType": "antagonistic",
+      "weight": 0.5,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess copper can reduce nitrogen availability"
+    },
+    {
+      "source": "Cu",
+      "target": "P",
+      "relationshipType": "antagonistic",
+      "weight": 0.6,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess copper can reduce phosphorus availability"
+    },
+    {
+      "source": "Cu",
+      "target": "S",
+      "relationshipType": "antagonistic",
+      "weight": 0.6,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess copper can reduce sulfur availability"
+    },
+    {
+      "source": "Cu",
+      "target": "Fe",
+      "relationshipType": "antagonistic",
+      "weight": 0.6,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess copper can reduce iron availability"
+    },
+    {
+      "source": "Cu",
+      "target": "Mo",
+      "relationshipType": "synergistic",
+      "weight": 0.3,
+      "animationStyle": "pulse",
+      "ruleDescription": "Balanced copper can support molybdenum"
+    },
+    {
+      "source": "Mn",
+      "target": "Ca",
+      "relationshipType": "antagonistic",
+      "weight": 0.6,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess manganese can reduce calcium availability"
+    },
+    {
+      "source": "Mn",
+      "target": "Fe",
+      "relationshipType": "antagonistic",
+      "weight": 0.7,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess manganese can reduce iron availability"
+    },
+    {
+      "source": "Mn",
+      "target": "Cu",
+      "relationshipType": "antagonistic",
+      "weight": 0.7,
+      "animationStyle": "pulse",
+      "ruleDescription": "Excess manganese can reduce copper availability"
+    },
+    {
+      "source": "Mn",
+      "target": "K",
+      "relationshipType": "synergistic",
+      "weight": 0.4,
+      "animationStyle": "pulse",
+      "ruleDescription": "Balanced manganese can support potassium"
+    },
+    {
+      "source": "Mn",
+      "target": "S",
+      "relationshipType": "synergistic",
+      "weight": 0.4,
+      "animationStyle": "pulse",
+      "ruleDescription": "Balanced manganese can support sulfur"
+    }
+  ]
+}
