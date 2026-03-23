@@ -5,6 +5,8 @@ import RelationshipEditor from './components/RelationshipEditor';
 import TermsPage from './components/TermsPage';
 import { calculateGraphState, createDefaultNodeState, createPersistedGraph } from './lib/graphMath';
 
+const buildLabel = `v${__APP_VERSION__} · ${__APP_COMMIT__}`;
+
 const initialTuning = {
   synergyFactor: 0.55,
   antagonismFactor: 0.7,
@@ -268,6 +270,9 @@ function ChartApp() {
 
       <footer className="site-footer">
         <span>Copyright agriwater.earth. Patent pending.</span>
+        <span className="build-badge" aria-label={`Build ${buildLabel}`}>
+          {buildLabel}
+        </span>
         <a className="footer-link" href="/legal/terms">
           Terms and Conditions
         </a>

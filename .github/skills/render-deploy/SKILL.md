@@ -25,8 +25,6 @@ Use this skill when working on deployment of this repository to Render.
 - Free tier storage is ephemeral, so saved graph edits do not survive restarts or redeploys
 - Production routing relies on Express serving `dist/` and falling back to `index.html` only for non-asset, non-API routes
 - Production assets use Vite content hashes, while HTML is served with `Cache-Control: no-store`
-- GitHub Actions workflow `.github/workflows/render-deploy.yml` can trigger Render deploys through the API
-- The workflow requires GitHub secret `RENDER_API_KEY`
 
 ## Procedure
 1. Confirm the latest code is pushed to GitHub before touching Render.
@@ -39,7 +37,6 @@ Use this skill when working on deployment of this repository to Render.
    - health check path
 4. For free tier, ensure no persistent disk is attached and `GRAPH_DATA_FILE` points to `/tmp/mulders-graph.json`.
 5. Trigger a deploy or deploy the latest commit manually if polling is slow.
-  - Preferred non-dashboard path for this repo: push to `main` after setting GitHub secret `RENDER_API_KEY`
 6. Watch logs through build, upload, deploy, and process startup.
 7. Confirm the server logs show the expected port and graph data file path.
 8. Open the public URL in a fresh browser session and verify the app renders past the loading screen.

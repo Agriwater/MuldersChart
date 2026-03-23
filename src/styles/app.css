@@ -318,6 +318,26 @@ input[type='range'] {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.site-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 12px 0 4px;
+  color: var(--muted);
+}
+
+.build-badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--accent);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
