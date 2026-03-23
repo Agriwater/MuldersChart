@@ -391,7 +391,16 @@ input[type='range'] {
   border: 1px solid var(--panel-border);
   box-shadow: var(--shadow);
   display: grid;
-  gap: 16px;
+  gap: 12px;
+}
+
+.element-tooltip p {
+  margin: 0;
+  line-height: 1.35;
+}
+
+.element-tooltip .insight-summary {
+  margin-top: 4px;
 }
 
 .element-tooltip-desktop,
@@ -408,7 +417,7 @@ input[type='range'] {
 
 .element-tooltip-slider {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   padding: 12px;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.03);
@@ -424,6 +433,10 @@ input[type='range'] {
   justify-content: space-between;
   gap: 12px;
   align-items: start;
+}
+
+.element-tooltip .insight-metrics {
+  gap: 2px;
 }
 
 .panel-table {
@@ -651,7 +664,8 @@ select {
     width: 100%;
     max-width: none;
     max-height: none;
-    padding: 18px;
+    gap: 10px;
+    padding: 16px;
     border-radius: 24px;
   }
 
