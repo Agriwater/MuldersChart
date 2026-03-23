@@ -391,6 +391,8 @@ input[type='range'] {
 .element-tooltip-floating {
   position: absolute;
   pointer-events: auto;
+  max-height: calc(100% - 36px);
+  overflow: auto;
 }
 
 .element-tooltip-slider {
@@ -617,8 +619,46 @@ select {
   }
 
   .scene-shell {
-    height: 520px;
-    min-height: 520px;
+    height: 420px;
+    min-height: 420px;
+  }
+
+  .scene-overlay-active {
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 12px;
+    background: rgba(1, 9, 17, 0.52);
+    backdrop-filter: blur(8px);
+  }
+
+  .element-tooltip-floating {
+    position: relative;
+    inset: auto;
+    left: auto !important;
+    top: auto !important;
+    width: min(100%, 34rem);
+    max-height: min(78vh, 42rem);
+    padding: 18px;
+    border-radius: 24px;
+    overflow: auto;
+  }
+
+  .element-tooltip-header,
+  .element-tooltip .insight-card-header {
+    align-items: start;
+  }
+
+  .element-tooltip .insight-card-header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .element-tooltip .insight-summary {
+    word-break: break-word;
   }
 }
 
