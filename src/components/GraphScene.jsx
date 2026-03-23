@@ -1,7 +1,7 @@
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Line, OrbitControls, Text } from '@react-three/drei';
 import * as THREE from 'three';
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useGraphLayout } from '../hooks/useGraphLayout';
 
 const antagonisticColor = '#c81d4f';
@@ -14,6 +14,15 @@ const badgeInnerFace = '#0d3150';
 const badgeRim = '#d8b45c';
 const badgeOuterShadow = '#c7d9e8';
 const sourceHighlightColor = '#f59e0b';
+const sceneOffset = [0, -0.35, 0];
+const sceneScale = 0.82;
+const fitPadding = 1.12;
+const badgeTopText = 'OPTIMAL NUTRIENT BALANCE';
+const badgeBottomText = 'FOR PLANT GROWTH';
+
+function getNodeRenderedRadius(node) {
+  return node.size * (0.82 + node.displayValue * 0.85 + node.availabilityScore * 0.45) * nodeScaleFactor * 0.9;
+}
 
 function getHighlightFade(highlightState) {
   if (!highlightState) {
@@ -35,11 +44,11 @@ function drawArcText(context, text, centerX, centerY, radius, centerAngle, rever
   const totalArcLength = widths.reduce((sum, width) => sum + width, 0);
   const totalAngle = totalArcLength / radius;
 
-  let currentAngle = centerAngle - totalAngle / 2;
+  let currentAngle = reverse ? centerAngle + totalAngle / 2 : centerAngle - totalAngle / 2;
 
   characters.forEach((character, index) => {
     const charAngle = widths[index] / radius;
-    currentAngle += charAngle / 2;
+    currentAngle += reverse ? -charAngle / 2 : charAngle / 2;
 
     context.save();
     context.translate(centerX + Math.cos(currentAngle) * radius, centerY + Math.sin(currentAngle) * radius);
@@ -47,7 +56,7 @@ function drawArcText(context, text, centerX, centerY, radius, centerAngle, rever
     context.fillText(character, 0, 0);
     context.restore();
 
-    currentAngle += charAngle / 2;
+    currentAngle += reverse ? -charAngle / 2 : charAngle / 2;
   });
 }
 
@@ -87,12 +96,12 @@ function createBalanceBadgeTexture() {
   context.arc(centerX, centerY, 312, 0, Math.PI * 2);
   context.fill();
 
-  context.font = 'bold 34px Arial';
+  context.font = 'bold 42px Arial';
   context.fillStyle = '#1f2937';
   context.textAlign = 'center';
   context.textBaseline = 'middle';
-  drawArcText(context, 'OPTIMAL NUTRIENT BALANCE FOR PLANT GROWTH', centerX, centerY, 378, -Math.PI / 2, false);
-  drawArcText(context, 'OPTIMAL NUTRIENT BALANCE FOR PLANT GROWTH', centerX, centerY, 378, Math.PI / 2, true);
+  drawArcText(context, badgeTopText, centerX, centerY, 378, -Math.PI / 2, false);
+  drawArcText(context, badgeBottomText, centerX, centerY, 378, Math.PI / 2, true);
 
   context.fillStyle = '#2f855a';
   context.beginPath();
@@ -250,12 +259,12 @@ function NodeMesh({ node, position, highlightState }) {
         <Text position={[0, 0.13, 0.12]} fontSize={0.42} color="#f8fafc" anchorX="center" anchorY="middle">
           {node.id}
         </Text>
-        <Text position={[0, -0.13, 0.12]} fontSize={0.1} color="#f8fafc" maxWidth={0.9} textAlign="center" anchorX="center" anchorY="middle">
+        <Text position={[0, -0.20, 0.12]} fontSize={0.16} color="#f8fafc" maxWidth={1.02} lineHeight={1.05} textAlign="center" anchorX="center" anchorY="middle">
           {node.label}
         </Text>
         <Text
-          position={[0, -0.27, 0.12]}
-          fontSize={0.11}
+          position={[0, -0.36, 0.12]}
+          fontSize={0.16}
           color="#f8fafc"
           maxWidth={0.9}
           textAlign="center"
@@ -349,15 +358,91 @@ function EdgeLink({ edge, positions, activity, highlightState }) {
   );
 }
 
+function CameraFitter({ graphState, positions, controlsRef }) {
+  const { camera, size } = useThree();
+
+  const framing = useMemo(() => {
+    const nodes = graphState.nodes
+      .map((node) => {
+        const position = positions[node.id];
+        if (!position) {
+          return null;
+        }
+
+        const radius = getNodeRenderedRadius(node);
+        return {
+          minX: (position[0] - radius) * sceneScale,
+          maxX: (position[0] + radius) * sceneScale,
+          minY: (position[1] - radius) * sceneScale + sceneOffset[1],
+          maxY: (position[1] + radius) * sceneScale + sceneOffset[1],
+        };
+      })
+      .filter(Boolean);
+
+    const hubRadius = 1.9 * sceneScale;
+    nodes.push({
+      minX: -hubRadius,
+      maxX: hubRadius,
+      minY: -hubRadius + sceneOffset[1],
+      maxY: hubRadius + sceneOffset[1],
+    });
+
+    const bounds = nodes.reduce((accumulator, nodeBounds) => ({
+      minX: Math.min(accumulator.minX, nodeBounds.minX),
+      maxX: Math.max(accumulator.maxX, nodeBounds.maxX),
+      minY: Math.min(accumulator.minY, nodeBounds.minY),
+      maxY: Math.max(accumulator.maxY, nodeBounds.maxY),
+    }), {
+      minX: Number.POSITIVE_INFINITY,
+      maxX: Number.NEGATIVE_INFINITY,
+      minY: Number.POSITIVE_INFINITY,
+      maxY: Number.NEGATIVE_INFINITY,
+    });
+
+    const width = Math.max(1, bounds.maxX - bounds.minX);
+    const height = Math.max(1, bounds.maxY - bounds.minY);
+
+    return {
+      centerX: (bounds.minX + bounds.maxX) / 2,
+      centerY: (bounds.minY + bounds.maxY) / 2,
+      width,
+      height,
+    };
+  }, [graphState.nodes, positions]);
+
+  useEffect(() => {
+    if (!size.width || !size.height) {
+      return;
+    }
+
+    const horizontalZoom = size.width / (framing.width * fitPadding);
+    const verticalZoom = size.height / (framing.height * fitPadding);
+    const nextZoom = Math.max(10, Math.min(horizontalZoom, verticalZoom));
+
+    camera.position.set(framing.centerX, framing.centerY, 20);
+    camera.zoom = nextZoom;
+    camera.updateProjectionMatrix();
+
+    if (controlsRef.current) {
+      controlsRef.current.target.set(framing.centerX, framing.centerY, 0);
+      controlsRef.current.update();
+    }
+  }, [camera, controlsRef, framing, size.height, size.width]);
+
+  return null;
+}
+
 export default function GraphScene({ graphState, highlightState = null }) {
   const positions = useGraphLayout(graphState.nodes, graphState.edges);
+  const controlsRef = useRef(null);
 
   return (
     <div className="scene-shell">
       <Canvas orthographic camera={{ position: [0, 0, 20], zoom: 34 }} dpr={[1, 1.75]}>
         <color attach="background" args={['#f7fbff']} />
         <ambientLight intensity={1} color="#ffffff" />
-        <group position={[0, -0.35, 0]} rotation={[0, 0, 0]} scale={0.82}>
+        <CameraFitter graphState={graphState} positions={positions} controlsRef={controlsRef} />
+        <group position={sceneOffset} rotation={[0, 0, 0]} scale={sceneScale}>
           <BalanceHub />
           {graphState.edges.map((edge) => (
             <EdgeLink
@@ -373,6 +458,7 @@ export default function GraphScene({ graphState, highlightState = null }) {
           ))}
         </group>
         <OrbitControls
+          ref={controlsRef}
           enableRotate={false}
           enablePan
           mouseButtons={{
@@ -385,7 +471,7 @@ export default function GraphScene({ graphState, highlightState = null }) {
             TWO: THREE.TOUCH.DOLLY_PAN,
           }}
           target={[0, -0.2, 0]}
-          minZoom={24}
+          minZoom={10}
           maxZoom={90}
         />
       </Canvas>

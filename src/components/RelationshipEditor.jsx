@@ -11,7 +11,7 @@ function createEmptyEdge() {
   };
 }
 
-export default function RelationshipEditor({ edges, onChange, onSave, saveState }) {
+export default function RelationshipEditor({ edges, onChange, onSave, saveState, className = '' }) {
   function updateEdge(index, field, value) {
     const nextEdges = edges.map((edge, edgeIndex) => {
       if (edgeIndex !== index) {
@@ -36,7 +36,7 @@ export default function RelationshipEditor({ edges, onChange, onSave, saveState 
   }
 
   return (
-    <section className="panel panel-table">
+    <section className={`panel panel-table relationship-editor ${className}`.trim()}>
       <div className="panel-header">
         <div>
           <p className="eyebrow">Interaction Table</p>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import GraphScene from './components/GraphScene';
 import ControlPanel from './components/ControlPanel';
 import RelationshipEditor from './components/RelationshipEditor';
+import TermsPage from './components/TermsPage';
 import { calculateGraphState, createDefaultNodeState, createPersistedGraph } from './lib/graphMath';
 
 const initialTuning = {
@@ -10,7 +11,7 @@ const initialTuning = {
   secondOrderDamping: 0.42,
 };
 
-export default function App() {
+function ChartApp() {
   const [graph, setGraph] = useState({ nodes: [], edges: [] });
   const [nutrientValues, setNutrientValues] = useState({});
   const [tuning, setTuning] = useState(initialTuning);
@@ -18,6 +19,24 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeInteraction, setActiveInteraction] = useState(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isRulesOpen, setIsRulesOpen] = useState(false);
+
+  useEffect(() => {
+    document.title = "Mulder's Chart 3D";
+  }, []);
+
+  useEffect(() => {
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        setIsMenuOpen(false);
+        setIsRulesOpen(false);
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     async function loadGraph() {
@@ -142,6 +161,11 @@ export default function App() {
     setSaveState('Rule table changed locally. Save file to persist changes.');
   }
 
+  function handleOpenRules() {
+    setIsMenuOpen(false);
+    setIsRulesOpen(true);
+  }
+
   if (isLoading) {
     return <div className="status-screen">Loading graph data...</div>;
   }
@@ -154,7 +178,7 @@ export default function App() {
     <main className="app-shell">
       <header className="hero">
         <div>
-          <p className="eyebrow">Three.js Nutrient Simulation</p>
+          <p className="eyebrow">Nutrient Simulation</p>
           <h1>Mulder&apos;s Chart in live 3D</h1>
           <p className="hero-copy">
             Adjust nutrient amounts, watch antagonistic suppression and synergistic support propagate through the network,
@@ -162,7 +186,27 @@ export default function App() {
           </p>
         </div>
         <div className="formula-card">
-          <span>Availability model</span>
+          <div className="formula-header">
+            <span>Availability model</span>
+            <div className="menu-shell">
+              <button
+                type="button"
+                className="ghost-button"
+                onClick={() => setIsMenuOpen((current) => !current)}
+                aria-haspopup="menu"
+                aria-expanded={isMenuOpen}
+              >
+                Menu
+              </button>
+              {isMenuOpen ? (
+                <div className="menu-panel" role="menu">
+                  <button type="button" className="menu-item" role="menuitem" onClick={handleOpenRules}>
+                    Open interaction table
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          </div>
           <strong>availability = clamp(base + synergy - antagonism, 0, 1)</strong>
           <small>First-order reactions apply immediately. Second-order effects re-enter the graph with damping.</small>
         </div>
@@ -193,12 +237,53 @@ export default function App() {
         ))}
       </section>
 
-      <RelationshipEditor
-        edges={graph.edges}
-        onChange={handleEdgeChange}
-        onSave={handleSaveGraph}
-        saveState={saveState}
-      />
+      {isRulesOpen ? (
+        <div className="modal-backdrop" onClick={() => setIsRulesOpen(false)}>
+          <div
+            className="modal-shell"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Editable Mulder rules"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="modal-header">
+              <div>
+                <p className="eyebrow">Interaction Table</p>
+                <h2>Editable Mulder rules</h2>
+              </div>
+              <button type="button" className="icon-button" onClick={() => setIsRulesOpen(false)}>
+                Close
+              </button>
+            </div>
+            <RelationshipEditor
+              edges={graph.edges}
+              onChange={handleEdgeChange}
+              onSave={handleSaveGraph}
+              saveState={saveState}
+              className="relationship-editor-modal"
+            />
+          </div>
+        </div>
+      ) : null}
+
+      <footer className="site-footer">
+        <span>Copyright agriwater.earth. Patent pending.</span>
+        <a className="footer-link" href="/legal/terms">
+          Terms and Conditions
+        </a>
+      </footer>
     </main>
   );
+}
+
+export default function App() {
+  const pathname = typeof window === 'undefined'
+    ? '/'
+    : window.location.pathname.replace(/\/$/, '') || '/';
+
+  if (pathname === '/legal/terms') {
+    return <TermsPage />;
+  }
+
+  return <ChartApp />;
 }
